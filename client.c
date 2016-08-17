@@ -10,48 +10,77 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "user.h"
+
 char* message;
 char* address;
 #define MAX_MESSAGE_SIZE 50
 #define CLIENT_KEY 10
 
-typedef struct{
-	char message[MAX_MESSAGE_SIZE];
-	int RW;
-}str_t;
+
+int connect_to_host(user_t* host,user_t* client)
+{
+	fflush( stdout );
+	printf("c\n");
+	int i;
+	int status = -1;
+
+	printf("c\n");
+	for(i = 0; i < 10; i++)
+	{
+		printf("b\n");
+		if(host->users[i] == NULL)
+		{
+			printf("asd\n");
+			host->users[i] =  client;
+			queue_element_t* message;
+			message  = (queue_element_t*)malloc(sizeof(queue_element_t));
+			 if(message == NULL){
+					 perror("malloc");
+					 exit(EXIT_FAILURE);
+		  	}
+			printf("A\n");
+			
+			strcpy(host->buffer,client->name);
+			printf("%s\n",host->buffer);
+			host->status = READY;
+			status = 1;
+			break;
+
+		}
+	}
+
+	return status;
+
+}
 
 int main(int argc, char** argv)
 {
-	//message = malloc(MAX_MESSAGE_SIZE);"hi there";
-	key_t mem_key;
-	mem_key = 1000;
-	address = "/temp";
-	int shmid;
-	shmid = (int) shmget(CLIENT_KEY,MAX_MESSAGE_SIZE,IPC_CREAT|0666);
-	if(shmid <0)
-	{
-		perror("Error with get");
-		exit(-1);
-	}
-	str_t*  send_message;
-	send_message = (str_t*) malloc(sizeof(str_t));
-	send_message = (str_t*) shmat(shmid,NULL,0);
-	if(send_message == -1)
-	{
-		perror("at fail");
-		exit(-1);
-	}
-	send_message->RW = 1;
-	strcpy(send_message->message,"Sending to server");
-	printf("%s",send_message->message);
-	
-	send_message->RW = 0;
+	printf("Creating Host\n");
+	user_t* host =  user(SERVER,SERVER_NAME);	
+	printf("Creating Client\n");
+	user_t* client = user(CLIENT,"rmc343");
+
+	printf("Connecting Client\n");	
+	//fflush()
+
+	int status = connect_to_host(host,client);
+
+	if(status == 1){
+		printf("Client Connected...\n");
         while(1)
         {
-                if(send_message->RW == 1){
-                        fgets(send_message->message,MAX_MESSAGE_SIZE,stdin);
-                        send_message->RW = 0;
-                }
+        	/*
+            if(host->status == READY)
+            {   
+               	fgets(host->buffer,BUFF_SIZE,stdin);
+                host->status = NOT_READY;
+                
+        	}
+        	*/
         }
-	return 0;	
+	}
+	
+	return 0;
+
 }
